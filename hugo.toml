@@ -2,3 +2,7 @@ baseURL = 'https://redanthrax.github.io/'
 languageCode = 'en-us'
 title = 'red code'
 theme = 'nightfall'
+
+[params]
+user = "red"
+hostname = "redanthrax.github.io"
