@@ -1,6 +1,6 @@
 +++
 title = 'Powershell Script Template'
-date = 2024-03-05T08:52:40-08:00
+date = 2022-05-11T08:52:40-08:00
 draft = false
 summary = 'Powershell script template for RMM and general use.'
 +++
