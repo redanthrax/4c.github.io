@@ -16,7 +16,7 @@ connection directly to the server.
 ### Prereqs
 This document assumes you’ve setup SELinux on Debian and are in passive mode.
 
-# VPN Server Setup
+# VPN Server Setu
 
 ### Initial Azure Configuration
 - Navigate to the Network Interface of the VM and Enable IP Forwarding
