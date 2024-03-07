@@ -1,7 +1,7 @@
 +++
 title = 'Azure Hosted Filebeat Syslog'
 date = 2022-05-16T09:12:23-08:00
-draft = true
+draft = false
 summary = 'Setup all-in-one syslog filebeat relay server on Azure'
 +++
 
@@ -240,4 +240,110 @@ sudo filebeat modules enable cisco
 sudo mkdir /etc/filebeat/configs
 ```
 
+- Create the client configuration for filebeat
+- Edit /etc/filebeat/configs/client1.yml
+- Change the syslog_port to an unused port
 
+```text
+filebeat.config:
+	modules:
+		enabled: true
+		path: modules.d/*.yml
+		reload.enabled: true
+		reload.period: 10s
+output.elasticsearch:
+    hosts: ["ingest.perchsecurity.com:443/elastic"]
+    headers:
+    X-Perch-Header: "Perch API Key"
+    protocol: "https"
+    compression_level: 5
+	allow_older_versions: true
+migration.6_to_7.enabled: true
+filebeat.modules:
+- module: cisco
+	meraki:
+	enabled: true
+	var.syslog_host: 0.0.0.0
+	var.syslog_port: 42000
+	var.log_level: 5
+```
+
+- Create the Filebeat data directory for clients
+
+```bash
+sudo mkdir -p /opt/filebeat/client1
+```
+
+- Test the configuration
+
+```bash
+sudo filebeat -e -c /etc/filebeat/configs/client1.yml --path.data /opt/filebeat/client1
+```
+
+- Create the service file
+
+```bash
+sudo vi /etc/systemd/system/filebeat-client1.service
+```
+
+```text
+[Unit]
+Description=Filebeat for Client1
+
+[Service]
+User=root
+WorkingDirectory=/usr/share/filebeat
+ExecStart=filebeat -e -c /etc/filebeat/configs/client1.yml --path.data /opt/filebeat/client1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+- Reload the daemon service
+
+```bash
+sudo systemctl daemon-reload
+```
+
+- Enable and start the service
+
+```bash
+sudo systemctl enable filebeat-client1.service && sudo systemctl start filebeat-client1.service
+```
+
+### Adding additional clients
+- Create a new client data directory
+
+```bash
+sudo mkdir /opt/filebeat/client2
+```
+
+- Copy the existing Filebeat config to a new client
+
+```bash
+sudo cp /etc/filebeat/configs/client1.yml /etc/filebeat/configs/client2.yml
+```
+
+- Edit the new config and change the syslog port and API key
+- Copy the filebeat service file from another client
+
+```bash
+sudo cp /etc/systemd/system/filebeat-client1.service /etc/systemd/system/filebeat-client2.service
+```
+
+- Edit the new service file and specify a different config and client data directory
+- Reload the daemon, enable the service, start the service
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl enable filebeat-client2.service && sudo systemctl start filebeat-client2.service
+```
+
+### Send Meraki Logs
+- Navigate to Network Wide -> General -> Configure in the Meraki Dashboard
+- Add a syslog server for the LAN IP of the log shipper server
+- Select all logs
+- Validate the logs are ingesting into your logging software
+
+### Post Setup
+- Take the necessary steps in SELinux to button up the system
