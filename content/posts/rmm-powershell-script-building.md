@@ -1,7 +1,7 @@
 +++
 title = 'RMM Powershell Script Building'
 date = 2023-01-01T18:18:25-08:00
-draft = true
+draft = false
 summary = 'Setup Windows for Powershell Script testing and building for RMM'
 +++
 
